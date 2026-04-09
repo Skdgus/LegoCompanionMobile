@@ -409,7 +409,7 @@ function BackChevron() {
 //
 // Layout (all pixel values derived from Figma & companion face.svg):
 //
-//   Canvas: 874×402
+//   Canvas: 875×402 (Figma node 982:415)
 //   Margin (symmetric): (874 − 471 − 29 − 132) / 2 = 121 px
 //
 //   ┌───────────────────────────────────────────────────────────────────────┐
@@ -430,7 +430,7 @@ const FACE_H    = 148;
 const GAP       = 29;
 const TIMER_D   = 132;   // outer diameter
 const TIMER_IN  = 118;   // inner orange circle diameter  (ring = (132−118)/2 = 7 px)
-const CANVAS_W  = 874;
+const CANVAS_W  = 875;
 const CANVAS_H  = 402;
 // The face panel is centred in the canvas; the timer hangs off to the right.
 // Figma 560:1314: face left ≈ (874−471)/2 = 201.5
