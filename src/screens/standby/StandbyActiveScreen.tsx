@@ -441,12 +441,37 @@ const CONTENT_TOP = Math.round((CANVAS_H - FACE_H) / 2) - 10; // ≈ 117
 const INFO_GAP_PX = 77;
 const INFO_TOP = CONTENT_TOP + FACE_H + INFO_GAP_PX;
 
+// Top + bottom safe-area reserves (px) — mirrored from the outer padding
+const SAFE_TOP = 44;
+const SAFE_BOT = 34;
+
+/** Returns a uniform scale so the 874×402 canvas fits the live viewport. */
+function useCanvasScale() {
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    function update() {
+      const availW = window.innerWidth;
+      const availH = window.innerHeight - SAFE_TOP - SAFE_BOT;
+      setScale(Math.min(1, availW / CANVAS_W, availH / CANVAS_H));
+    }
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+    };
+  }, []);
+  return scale;
+}
+
 type Props = { onLeave: () => void };
 
 export function StandbyActiveScreen({ onLeave }: Props) {
   const [cust, setCust]          = useState<CustState>(loadCust);
   const [secondsLeft, setSecondsLeft] = useState(INITIAL_SEC);
   const [running, setRunning]    = useState(false);
+  const scale                    = useCanvasScale();
 
   const { time, date } = useRealTimeClock();
   const temperature    = useTemperature();
@@ -517,12 +542,17 @@ export function StandbyActiveScreen({ onLeave }: Props) {
       <div
         className="relative text-[#1a1a1a]"
         style={{
-          width: CANVAS_W,
+          width:  CANVAS_W,
           height: CANVAS_H,
-          maxWidth: "100vw",
-          maxHeight:
-            "calc(100dvh - 44px - 34px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))",
           backgroundColor: screenBg,
+          transformOrigin: "center center",
+          transform: scale < 1 ? `scale(${scale})` : undefined,
+          // Keep the div's layout footprint matching its visual size so the
+          // outer flex container stays centred without extra scroll space.
+          marginTop:    scale < 1 ? `${((scale - 1) * CANVAS_H) / 2}px` : undefined,
+          marginBottom: scale < 1 ? `${((scale - 1) * CANVAS_H) / 2}px` : undefined,
+          marginLeft:   scale < 1 ? `${((scale - 1) * CANVAS_W) / 2}px` : undefined,
+          marginRight:  scale < 1 ? `${((scale - 1) * CANVAS_W) / 2}px` : undefined,
         }}
       >
         {/* ── Leave button (top-left) ────────────────────────────────────── */}
