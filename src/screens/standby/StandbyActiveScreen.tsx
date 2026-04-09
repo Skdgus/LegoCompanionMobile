@@ -424,7 +424,16 @@ function BackChevron() {
 // chosen companion body colour.
 //
 
-// Content geometry (px) — derived from Figma 560:1314
+// Content geometry (px) — derived from Figma 982:415
+//
+//   Canvas  : 875 × 402
+//   Face    : 471 × 148  (centred horizontally → MARGIN_X = (875−471)/2 = 202)
+//   Gap     : 29 px      (face right → timer left; 471+29+132 = 632 = Group 293 w)
+//   Timer   : 132 × 132  (vertically centred on face)
+//   Content group height: face(148) + info_gap(77) + time_row(30) = 255
+//                         → vertically centred → CONTENT_TOP = (402−148)/2 = 127
+//   Info gap: 77 px      (from Group 293 height: 255−148−30 = 77)
+//   Time row: 251 px wide; item gap = (251−50−104−37)/2 = 30 px
 const FACE_W    = 471;
 const FACE_H    = 148;
 const GAP       = 29;
@@ -432,16 +441,13 @@ const TIMER_D   = 132;   // outer diameter
 const TIMER_IN  = 118;   // inner orange circle diameter  (ring = (132−118)/2 = 7 px)
 const CANVAS_W  = 875;
 const CANVAS_H  = 402;
-// The face panel is centred in the canvas; the timer hangs off to the right.
-// Figma 560:1314: face left ≈ (874−471)/2 = 201.5
+// Face horizontally centred; timer hangs off to the right.
 const MARGIN_X  = Math.round((CANVAS_W - FACE_W) / 2); // 202
 
-// Vertical: keep a fixed gap between face and real-time info row
-// Figma 982:415: face/timer row sits slightly above vertical center, and the
-// bottom info row has a tighter gap than earlier iterations.
-const CONTENT_TOP = Math.round((CANVAS_H - FACE_H) / 2) - 15; // ≈ 112
-const INFO_GAP_PX = 60;
-const INFO_TOP = CONTENT_TOP + FACE_H + INFO_GAP_PX;
+// Vertical: face centred in canvas; info row 77 px below face bottom.
+const CONTENT_TOP = Math.round((CANVAS_H - FACE_H) / 2); // 127
+const INFO_GAP_PX = 77;
+const INFO_TOP = CONTENT_TOP + FACE_H + INFO_GAP_PX; // 352
 
 // Portrait-only safe-area reserves: only applied when the device is taller
 // than it is wide (portrait). In landscape, only the real CSS safe-area
@@ -577,7 +583,7 @@ export function StandbyActiveScreen({ onLeave }: Props) {
           type="button"
           onClick={onLeave}
           className="absolute flex items-center gap-1 rounded-full px-3 py-1.5 shadow-sm transition hover:brightness-95 active:scale-[0.98]"
-          style={{ left: 20, top: 15, background: "var(--color-standby-leave)", minHeight: 28 }}
+          style={{ left: 48, top: 20, background: "var(--color-standby-leave)", minHeight: 28 }}
         >
           <BackChevron />
           <span className="text-[15px] font-extrabold leading-none">Leave</span>
@@ -669,7 +675,7 @@ export function StandbyActiveScreen({ onLeave }: Props) {
         {/* ── Bottom info — centred in canvas, aligned to face centre ──────
              Face is centred at x=437; this row is also centred at x=437.   */}
         <div
-          className="absolute flex items-center justify-center gap-[60px] font-extrabold text-[#1a1a1a]"
+          className="absolute flex items-center justify-center gap-[30px] font-extrabold text-[#1a1a1a]"
           style={{ left: 0, right: 0, top: INFO_TOP }}
         >
           <span className="text-[17px] tabular-nums">{time}</span>
