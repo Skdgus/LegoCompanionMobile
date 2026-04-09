@@ -324,9 +324,16 @@ function useRealTimeClock() {
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
   }, []);
-  // Figma 982:415 shows 24h time and numeric date (MM/DD/YYYY).
-  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-  const date = now.toLocaleDateString([], { month: "2-digit", day: "2-digit", year: "numeric" });
+  const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+
+  const weekday = now.toLocaleDateString([], { weekday: "short" });   // "Wed"
+  const month   = now.toLocaleDateString([], { month: "long" });      // "April"
+  const day     = now.getDate();
+  const suffix  = day === 1 || day === 21 || day === 31 ? "st"
+                : day === 2 || day === 22             ? "nd"
+                : day === 3 || day === 23             ? "rd"
+                : "th";
+  const date = `${weekday} ${month} ${day}${suffix}`;
 
   return { time, date };
 }
@@ -419,8 +426,8 @@ function BackChevron() {
 
 // Content geometry (px) — derived from Figma 982:415
 //
-//   Canvas  : 875 × 402
-//   Face    : 471 × 148  (centred horizontally → MARGIN_X = (875−471)/2 = 202)
+//   Canvas  : 797 × 402
+//   Face    : 471 × 148  (centred horizontally → MARGIN_X = (797−471)/2 = 163)
 //   Gap     : 29 px      (face right → timer left; 471+29+132 = 632 = Group 293 w)
 //   Timer   : 132 × 132  (vertically centred on face)
 //   Content group height: face(148) + info_gap(77) + time_row(30) = 255
@@ -432,20 +439,18 @@ const FACE_H    = 148;
 const GAP       = 29;
 const TIMER_D   = 132;   // outer diameter
 const TIMER_IN  = 118;   // inner orange circle diameter  (ring = (132−118)/2 = 7 px)
-const CANVAS_W  = 875;
+const CANVAS_W  = 797;
 const CANVAS_H  = 402;
 // Face horizontally centred; timer hangs off to the right.
-const MARGIN_X  = Math.round((CANVAS_W - FACE_W) / 2); // 202
+const MARGIN_X  = Math.round((CANVAS_W - FACE_W) / 2); // 163
 
 // Vertical: face centred in canvas; info row 77 px below face bottom.
 const CONTENT_TOP = Math.round((CANVAS_H - FACE_H) / 2); // 127
 const INFO_GAP_PX = 77;
 const INFO_TOP = CONTENT_TOP + FACE_H + INFO_GAP_PX; // 352
-const INFO_ROW_W = 251;
-const INFO_ROW_GAP = 30;
 
 /**
- * Returns a uniform scale so the 875×402 design canvas fits the live viewport.
+ * Returns a uniform scale so the 797×402 design canvas fits the live viewport.
  *
  * Full-bleed behavior:
  * - We do NOT subtract the previous 44/34 "chrome reserves".
@@ -663,15 +668,8 @@ export function StandbyActiveScreen({ onLeave }: Props) {
         {/* ── Bottom info — centred in canvas, aligned to face centre ──────
              Face is centred at x=437; this row is also centred at x=437.   */}
         <div
-          className="absolute flex items-center font-extrabold text-[#1a1a1a]"
-          style={{
-            top: INFO_TOP,
-            left: "50%",
-            width: INFO_ROW_W,
-            transform: "translateX(-50%)",
-            justifyContent: "flex-start",
-            gap: INFO_ROW_GAP,
-          }}
+          className="absolute flex items-center justify-center gap-[30px] font-extrabold text-[#1a1a1a]"
+          style={{ left: 0, right: 0, top: INFO_TOP }}
         >
           <span className="text-[17px] tabular-nums">{time}</span>
           <span className="text-[17px] tabular-nums">{date}</span>
