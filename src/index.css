@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Only scan app source for classes (avoids stray resolution from parent folders on Windows) */
+@source "./**/*.{ts,tsx,js,jsx}";
+
 @theme {
   --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
   /* Figma HomePage + shared */

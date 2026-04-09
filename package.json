@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean:vite": "node -e \"const fs=require('fs');const p='node_modules/.vite';try{fs.rmSync(p,{recursive:true,force:true});console.log('Removed',p);}catch(e){console.log('Skip clean:vite:',e.message);}\""
   },
   "dependencies": {
     "lucide-react": "^1.7.0",
