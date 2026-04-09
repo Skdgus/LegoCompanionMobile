@@ -441,17 +441,22 @@ const CONTENT_TOP = Math.round((CANVAS_H - FACE_H) / 2) - 10; // ≈ 117
 const INFO_GAP_PX = 77;
 const INFO_TOP = CONTENT_TOP + FACE_H + INFO_GAP_PX;
 
-// Top + bottom safe-area reserves (px) — mirrored from the outer padding
-const SAFE_TOP = 44;
-const SAFE_BOT = 34;
+// Portrait-only safe-area reserves: only applied when the device is taller
+// than it is wide (portrait). In landscape, only the real CSS safe-area
+// insets apply, so the canvas can fill the full available height.
+const PORTRAIT_TOP = 44;
+const PORTRAIT_BOT = 34;
 
 /** Returns a uniform scale so the 874×402 canvas fits the live viewport. */
 function useCanvasScale() {
   const [scale, setScale] = useState(1);
   useEffect(() => {
     function update() {
+      const landscape = window.innerWidth > window.innerHeight;
+      const reserveTop = landscape ? 0 : PORTRAIT_TOP;
+      const reserveBot = landscape ? 0 : PORTRAIT_BOT;
       const availW = window.innerWidth;
-      const availH = window.innerHeight - SAFE_TOP - SAFE_BOT;
+      const availH = window.innerHeight - reserveTop - reserveBot;
       setScale(Math.min(1, availW / CANVAS_W, availH / CANVAS_H));
     }
     update();
@@ -529,13 +534,23 @@ export function StandbyActiveScreen({ onLeave }: Props) {
   // Conic gradient progress: elapsed portion in dark navy, remaining in cream
   const elapsedDeg = (1 - secondsLeft / INITIAL_SEC) * 360;
 
+  const landscape = typeof window !== "undefined" && window.innerWidth > window.innerHeight;
+
   return (
     <div
       className="fixed inset-0 z-[101] flex items-center justify-center"
       style={{
         boxSizing: "border-box",
-        paddingTop: "calc(44px + env(safe-area-inset-top, 0px))",
-        paddingBottom: "calc(34px + env(safe-area-inset-bottom, 0px))",
+        // In landscape: only real device safe-area insets (notch/home bar).
+        // In portrait: add the extra 44/34 chrome reserves on top.
+        paddingTop:    landscape
+          ? "env(safe-area-inset-top, 0px)"
+          : `calc(${PORTRAIT_TOP}px + env(safe-area-inset-top, 0px))`,
+        paddingBottom: landscape
+          ? "env(safe-area-inset-bottom, 0px)"
+          : `calc(${PORTRAIT_BOT}px + env(safe-area-inset-bottom, 0px))`,
+        paddingLeft:  "env(safe-area-inset-left, 0px)",
+        paddingRight: "env(safe-area-inset-right, 0px)",
         backgroundColor: screenBg,
       }}
     >
