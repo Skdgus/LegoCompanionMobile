@@ -8,11 +8,11 @@ import eyesSvg from "./repo-svg/eyesSvg";
 import mouthSvg from "./repo-svg/mouthSvg";
 import eyebrowSvg from "./repo-svg/eyebrowSvg";
 import mainSvg from "./repo-svg/mainSvg";
-import blushTileSvg from "../../../../Blush.svg";
-import glassesTileSvg from "../../../../Glasses.svg";
-import bowTieTileSvg from "../../../../BowTie.svg";
-import sweatTileSvg from "../../../../Sweat.svg";
-import bandAidTileSvg from "../../../../BandAid.svg";
+import blushTileSvg from "../../../assets/Blush.svg";
+import glassesTileSvg from "../../../assets/Glasses.svg";
+import bowTieTileSvg from "../../../assets/BowTie.svg";
+import sweatTileSvg from "../../../assets/Sweat.svg";
+import bandAidTileSvg from "../../../assets/BandAid.svg";
 
 type Props = {
   onBack: () => void;

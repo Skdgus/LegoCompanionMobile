@@ -5,11 +5,11 @@ import leafIcon from "../../assets/tabler_leaf-filled.svg";
 import searchIcon from "../../assets/searchIcon.svg";
 import bambooBuildImg from "../../assets/bamboo-build.png";
 import flowerBuildImg from "../../assets/flower-build.png";
-import blushTileSvg from "../../../Blush.svg";
-import glassesTileSvg from "../../../Glasses.svg";
-import bowTieTileSvg from "../../../BowTie.svg";
-import sweatTileSvg from "../../../Sweat.svg";
-import bandAidTileSvg from "../../../BandAid.svg";
+import blushTileSvg from "../../assets/Blush.svg";
+import glassesTileSvg from "../../assets/Glasses.svg";
+import bowTieTileSvg from "../../assets/BowTie.svg";
+import sweatTileSvg from "../../assets/Sweat.svg";
+import bandAidTileSvg from "../../assets/BandAid.svg";
 import { unlockDecoration, getUnlockedDecorations } from "./customization/CompanionCustomizationScreen";
 
 // ─── Leaf coin icon ────────────────────────────────────────────────────────────
