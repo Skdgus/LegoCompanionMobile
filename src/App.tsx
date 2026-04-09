@@ -15,6 +15,8 @@ import { TaskCardRow, type TaskRowModel } from "./components/TaskCardRow";
 import { StatTile, type StatConfig, STAT_W } from "./components/StatTile";
 import { ProgressPanel } from "./components/ProgressPanel";
 import { CompanionPalScreen } from "./screens/CompanionPalScreen";
+import { StandbyAnimationOverlay } from "./screens/standby/StandbyAnimationOverlay";
+import { StandbyActiveScreen } from "./screens/standby/StandbyActiveScreen";
 import { CompanionCustomizationScreen } from "./screens/customization/CompanionCustomizationScreen";
 import { DeedScreen } from "./screens/DeedScreen";
 import { CommunityFriendsScreen } from "./screens/CommunityFriendsScreen";
@@ -89,7 +91,8 @@ const TASK_LIMIT = 10;
 type AppScreen =
   | "home" | "customize" | "deed"
   | "shop" | "community" | "profile"
-  | "edit-profile" | "badge-collection" | "lego-collection";
+  | "edit-profile" | "badge-collection" | "lego-collection"
+  | "standby-anim" | "standby-active";
 
 const PROFILE_KEY = "profile.userInfo";
 
@@ -220,6 +223,26 @@ export default function App() {
         onComplete={() => {
           setOnboarded(true);
           setCompanionNameState(getCompanionName());
+        }}
+      />
+    );
+  }
+
+  // Full-screen standby screens render outside the normal screen shell
+  if (screen === "standby-anim") {
+    return (
+      <StandbyAnimationOverlay
+        onComplete={() => setScreen("standby-active")}
+      />
+    );
+  }
+
+  if (screen === "standby-active") {
+    return (
+      <StandbyActiveScreen
+        onLeave={() => {
+          setScreen("home");
+          setShowPalModal(true);
         }}
       />
     );
@@ -495,6 +518,7 @@ export default function App() {
               tasks={tasks}
               onCustomize={() => { setShowPalModal(false); setScreen("customize"); }}
               onClose={() => setShowPalModal(false)}
+              onEnterStandby={() => { setShowPalModal(false); setScreen("standby-anim"); }}
             />
           </div>
         </div>

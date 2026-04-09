@@ -1,1 +1,7 @@
 node_modules
+dist
+vendor/
+*.local
+.env
+.env.*
+tsconfig.tsbuildinfo

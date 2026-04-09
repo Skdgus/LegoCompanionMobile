@@ -7,8 +7,6 @@ import iconApple from "../../assets/fluent_food-apple-24-filled.svg";
 import iconExercise from "../../assets/material-symbols_exercise.svg";
 import iconThunder from "../../assets/boxicons_thunder-filled.svg";
 import { MeepiAvatar } from "../components/MeepiAvatar";
-import { StandbyActiveScreen } from "./standby/StandbyActiveScreen";
-import { StandbyAnimationOverlay } from "./standby/StandbyAnimationOverlay";
 
 // ── Expression SVGs ───────────────────────────────────────────────────────────
 import exprImg1 from "../../assets/expression-1.svg";
@@ -189,18 +187,15 @@ function StandbyIcon() {
   );
 }
 
-type StandbyPhase = "none" | "anim" | "active";
 
 type Props = {
   onCustomize: () => void;
   onClose?: () => void;
+  onEnterStandby?: () => void;
   tasks?: TaskRowModel[];
 };
 
-export function CompanionPalScreen({ onCustomize, onClose, tasks = [] }: Props) {
-  const [standby, setStandby] = useState<StandbyPhase>("none");
-  const animDone = useCallback(() => setStandby("active"), []);
-  const leaveStandby = useCallback(() => setStandby("none"), []);
+export function CompanionPalScreen({ onCustomize, onClose, onEnterStandby, tasks = [] }: Props) {
   const [palName, setPalName] = useState(() => getCompanionName());
   useEffect(() => {
     const id = window.setInterval(() => setPalName(getCompanionName()), 800);
@@ -342,7 +337,7 @@ export function CompanionPalScreen({ onCustomize, onClose, tasks = [] }: Props) 
       <div className="relative z-10 mx-auto pt-[35.834px]" style={{ width: 362 }}>
         <button
           type="button"
-          onClick={() => setStandby("anim")}
+          onClick={onEnterStandby}
           className="flex w-full items-center justify-center gap-3 rounded-[20px] py-[14px] transition hover:brightness-95 active:scale-[0.99]"
           style={{
             height: 65,
@@ -354,9 +349,6 @@ export function CompanionPalScreen({ onCustomize, onClose, tasks = [] }: Props) 
           <span className="text-[17px] font-extrabold leading-[35px] text-[#1a1a1a]">Companion Mode</span>
         </button>
       </div>
-
-      {standby === "anim" && <StandbyAnimationOverlay onComplete={animDone} />}
-      {standby === "active" && <StandbyActiveScreen onLeave={leaveStandby} />}
     </div>
   );
 }
