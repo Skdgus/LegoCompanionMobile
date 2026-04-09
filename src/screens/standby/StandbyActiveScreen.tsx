@@ -450,25 +450,21 @@ const INFO_GAP_PX = 77;
 const INFO_TOP = CONTENT_TOP + FACE_H + INFO_GAP_PX; // 352
 
 /**
- * Returns a uniform scale for the 797×402 design canvas.
+ * Returns a uniform scale so the 797×402 design canvas fits the live viewport.
  *
- * Behavior:
- * - Portrait: "contain" (fit entirely within viewport).
- * - Landscape: "cover" (full-bleed; fills viewport and crops overflow).
- *
- * Real notch/home-bar safe areas are handled by CSS `env(safe-area-inset-*)`
- * padding on the outer container.
+ * Full-bleed behavior:
+ * - We do NOT subtract the previous 44/34 "chrome reserves".
+ * - We allow scaling UP (scale > 1) so the design frame can expand on larger screens.
+ * - Real notch/home-bar safe areas are handled by CSS `env(safe-area-inset-*)` padding
+ *   on the outer container.
  */
 function useCanvasScale() {
   const [scale, setScale] = useState(1);
   useEffect(() => {
     function update() {
-      const landscape = window.innerWidth > window.innerHeight;
       const availW = window.innerWidth;
       const availH = window.innerHeight;
-      const sx = availW / CANVAS_W;
-      const sy = availH / CANVAS_H;
-      setScale(landscape ? Math.max(sx, sy) : Math.min(sx, sy));
+      setScale(Math.min(availW / CANVAS_W, availH / CANVAS_H));
     }
     update();
     window.addEventListener("resize", update);
