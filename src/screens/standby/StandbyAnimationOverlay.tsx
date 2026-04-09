@@ -1,6 +1,30 @@
 import { useEffect, useState } from "react";
 import rotateScreenIcon from "../../../assets/rotate-screen-icon.svg";
 
+const CUST_KEY = "meepiCustomization.v1";
+const COLOR_SWATCHES: readonly string[] = [
+  "#3a4175", "#d7bace", "#eca2c0", "#e585ab", "#d3716e", "#c4210c",
+  "#d3762b", "#aa9542", "#eed167", "#dfe596", "#769875", "#0d8991",
+  "#84bfea", "#416fa3",
+];
+
+function lightenHex(hex: string, amt: number): string {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const r = Math.min(255, (n >> 16) + amt);
+  const g = Math.min(255, ((n >> 8) & 0xff) + amt);
+  const b = Math.min(255, (n & 0xff) + amt);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
+function loadBodyColor(): string {
+  try {
+    const p = JSON.parse(localStorage.getItem(CUST_KEY) ?? "") as { color?: number };
+    return (COLOR_SWATCHES[p.color ?? 12] ?? "#84bfea") as string;
+  } catch {
+    return "#84bfea";
+  }
+}
+
 /**
  * Three-frame intro animation — each step holds for FRAME_MS.
  *
@@ -25,6 +49,8 @@ type Props = {
 
 export function StandbyAnimationOverlay({ onComplete }: Props) {
   const [step, setStep] = useState(0);
+  const bodyColor = loadBodyColor();
+  const screenBg = lightenHex(bodyColor, 10);
 
   // Track viewport height so the phone is always visually centred on screen
   // in the portrait steps, regardless of device/browser chrome height.
@@ -61,15 +87,26 @@ export function StandbyAnimationOverlay({ onComplete }: Props) {
                               : Math.round((402 - PHONE_H) / 2);   // 76
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-app-bg" role="presentation">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center"
+      role="presentation"
+      style={{
+        boxSizing: "border-box",
+        paddingTop: "calc(44px + env(safe-area-inset-top, 0px))",
+        paddingBottom: "calc(34px + env(safe-area-inset-bottom, 0px))",
+        backgroundColor: screenBg,
+      }}
+    >
       <div
-        className="relative overflow-hidden bg-standby-bg"
+        className="relative overflow-hidden"
         style={{
           width: canvasW,
           height: canvasH,
           maxWidth: "100vw",
-          maxHeight: "100vh",
+          maxHeight:
+            "calc(100dvh - 44px - 34px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))",
           transition: `width ${EASE}, height ${EASE}`,
+          backgroundColor: screenBg,
         }}
       >
         {/* Combined phone + rotate icon */}

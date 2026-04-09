@@ -66,69 +66,99 @@ function lightenHex(hex: string, amt: number): string {
 //   Mouth     centred   cx≈237  cy≈88
 //
 
-const EYE_SIZE  = 30;  // rendered square size for each eye icon (≈ r14.5 from companion face.svg)
-const MOUTH_W   = 60;  // rendered width for mouth icon
-const MOUTH_H   = 28;  // rendered height for mouth icon
-const L_EYE_X   = 164.5;
-const R_EYE_X   = 309.5;
-const EYE_Y     = 78.5;
-const MOUTH_X   = 237;
-const MOUTH_Y   = 88;
+// Scale facial features to pixel-perfect match the companion popup page.
+//
+// Derivation:
+//   MeepiCharacter eye centres: cx1=70.59  cx2=97.04  (avatar 167.115 vb)
+//   StandbyFace   eye centres: 164.5      309.5       (face plate 471 px)
+//   S_eye   = 145 / 26.45 = 5.483  → accounts for face-plate zoom
+//
+//   Eye variants with large viewBoxes (76×76) only fill ~40 % of the box,
+//   so each variant needs its own rendered w/h (= avatar_w × S_eye).
+//   This gives a visual diameter of 29–44 px for the standard eyes, exactly
+//   matching the reference (type-0 circle: 71 × 0.406 ≈ 29 px).
+//
+//   Mouth and eyebrows use S_mouth=5.0 / S_ebrow=5.0 so the shapes don't
+//   over-dominate the narrower vertical extent of the face plate.
+//
+//   MOUTH_Y is shifted to 103 so the smile sits visually below the eyes
+//   (≈ 10–28 px gap between the visual eye-bottom and smile-top).
 
-type IconSpec = { vb: string; c: React.ReactNode };
+const S_EYE   = 5.483;
+const S_MOUTH = 5.0;
+const S_EBROW = 5.0;
+
+const L_EYE_X = 164.5;
+const R_EYE_X = 309.5;
+const EYE_Y   = 78.5;
+const MOUTH_X = 237;
+const MOUTH_Y = 103;
+
+type IconSpec = { vb: string; c: React.ReactNode; w: number; h: number };
 
 function StandbyFace({ cust }: { cust: CustState }) {
   const bodyColor = (COLOR_SWATCHES[cust.color] ?? "#84bfea") as string;
   // Background of the face panel — lighter tint of the body colour
   const faceBg    = lightenHex(bodyColor, 35);
 
-  // ── Eye variants (same content as MeepiAvatar.renderEyes) ──────────────
+  // ── Eye variants — per-variant w/h = avatar_w × S_EYE ──────────────────
+  // avatar_w: 13 (large vb), 5.5 (type 2), 6.5 (types 3-5,8)
+  const E13 = Math.round(13  * S_EYE); // 71
+  const E55 = Math.round(5.5 * S_EYE); // 30
+  const E65 = Math.round(6.5 * S_EYE); // 36
+  const E60 = Math.round(6.0 * S_EYE); // 33
+
   const ep: IconSpec = (({
-    0: { vb: "0 0 76 76",       c: <ellipse cx="38.14" cy="38.59" rx="15.44" ry="14.98" fill="#1E1E1E" /> },
-    1: { vb: "0 0 76 76",       c: <ellipse cx="38.59" cy="38.14" rx="22.25" ry="21.79" fill="#1E1E1E" /> },
-    2: { vb: "0 0 31 30",       c: <><ellipse cx="15.44" cy="14.98" rx="15.44" ry="14.98" fill="#1E1E1E" /><ellipse cx="15.44" cy="14.98" rx="9.08" ry="8.63" fill="#FFF7E7" /></> },
-    3: { vb: "0 0 42.08 42.75", c: <><path d={eyesSvg.p3d21b680} fill="#1E1E1E" /><path d={eyesSvg.p26fe1500} fill="#1E1E1E" /><path d={eyesSvg.p3e254010} fill="#1E1E1E" /></> },
-    4: { vb: "0 0 40 36.3",     c: <><ellipse cx="19.98" cy="21.34" rx="15.44" ry="14.98" fill="#1E1E1E" /><path d={eyesSvg.pcde3500} fill="#1E1E1E" /></> },
-    5: { vb: "0 0 44.5 43.9",   c: <><ellipse cx="22.25" cy="22.09" rx="22.25" ry="21.79" fill="#1E1E1E" /><ellipse cx="24.97" cy="14.37" rx="14.07" ry="10.44" fill="#FFF7E7" transform="rotate(18.5 24.97 14.37)" /><path d={eyesSvg.p3eb06800} fill="#FFF7E7" /></> },
-    6: { vb: "0 0 76 76",       c: <rect x="24.85" y="30.75" width="26.3" height="14.5" rx="7.25" fill="#1E1E1E" transform="rotate(12.28 38 38)" /> },
-    7: { vb: "0 0 76 76",       c: <path d={eyesSvg.p25856680} fill="#1E1E1E" /> },
-    8: { vb: "0 0 40.3 34.7",   c: <><path d={eyesSvg.p2650ce00} fill="#1E1E1E" /><path d={eyesSvg.p12dcb00} fill="#FFF7E7" /><path d={eyesSvg.p14fec80} fill="#FFF7E7" /><path d={eyesSvg.p27a600} fill="#1E1E1E" /></> },
-    9: { vb: "0 0 76 76",       c: <path d={eyesSvg.pc212a00} fill="#1E1E1E" /> },
+    0: { vb: "0 0 76 76",       w: E13, h: E13, c: <ellipse cx="38.14" cy="38.59" rx="15.44" ry="14.98" fill="#1E1E1E" /> },
+    1: { vb: "0 0 76 76",       w: E13, h: E13, c: <ellipse cx="38.59" cy="38.14" rx="22.25" ry="21.79" fill="#1E1E1E" /> },
+    2: { vb: "0 0 31 30",       w: E55, h: E55, c: <><ellipse cx="15.44" cy="14.98" rx="15.44" ry="14.98" fill="#1E1E1E" /><ellipse cx="15.44" cy="14.98" rx="9.08" ry="8.63" fill="#FFF7E7" /></> },
+    3: { vb: "0 0 42.08 42.75", w: E65, h: E65, c: <><path d={eyesSvg.p3d21b680} fill="#1E1E1E" /><path d={eyesSvg.p26fe1500} fill="#1E1E1E" /><path d={eyesSvg.p3e254010} fill="#1E1E1E" /></> },
+    4: { vb: "0 0 40 36.3",     w: E65, h: E60, c: <><ellipse cx="19.98" cy="21.34" rx="15.44" ry="14.98" fill="#1E1E1E" /><path d={eyesSvg.pcde3500} fill="#1E1E1E" /></> },
+    5: { vb: "0 0 44.5 43.9",   w: E65, h: E65, c: <><ellipse cx="22.25" cy="22.09" rx="22.25" ry="21.79" fill="#1E1E1E" /><ellipse cx="24.97" cy="14.37" rx="14.07" ry="10.44" fill="#FFF7E7" transform="rotate(18.5 24.97 14.37)" /><path d={eyesSvg.p3eb06800} fill="#FFF7E7" /></> },
+    6: { vb: "0 0 76 76",       w: E13, h: E13, c: <rect x="24.85" y="30.75" width="26.3" height="14.5" rx="7.25" fill="#1E1E1E" transform="rotate(12.28 38 38)" /> },
+    7: { vb: "0 0 76 76",       w: E13, h: E13, c: <path d={eyesSvg.p25856680} fill="#1E1E1E" /> },
+    8: { vb: "0 0 40.3 34.7",   w: E65, h: E55, c: <><path d={eyesSvg.p2650ce00} fill="#1E1E1E" /><path d={eyesSvg.p12dcb00} fill="#FFF7E7" /><path d={eyesSvg.p14fec80} fill="#FFF7E7" /><path d={eyesSvg.p27a600} fill="#1E1E1E" /></> },
+    9: { vb: "0 0 76 76",       w: E13, h: E13, c: <path d={eyesSvg.pc212a00} fill="#1E1E1E" /> },
   } as Record<number, IconSpec>)[cust.eyes]) ?? {
-    vb: "0 0 76 76",
+    vb: "0 0 76 76", w: E13, h: E13,
     c:  <ellipse cx="38.14" cy="38.59" rx="15.44" ry="14.98" fill="#1E1E1E" />,
   };
 
-  // ── Mouth variants ──────────────────────────────────────────────────────
+  // ── Mouth variants — per-variant w/h = avatar_w/h × S_MOUTH ────────────
+  const M24 = Math.round(24   * S_MOUTH); // 120
+  const M12 = Math.round(12   * S_MOUTH); // 60
+  const M8  = Math.round(8    * S_MOUTH); // 40
+  const Mh37 = Math.round(3.7  * S_MOUTH); // 19
+  const Mh91 = Math.round(9.1  * S_MOUTH); // 46
+  const Mh7  = Math.round(7    * S_MOUTH); // 35
+
   const mp: IconSpec = (({
-    0: { vb: "0 0 76.28 76.28", c: <path d={mouthSvg.pce9f4f0} fill="#1E1E1E" /> },
-    1: { vb: "0 0 76.28 76.28", c: <path d={mouthSvg.p2d742180} fill="#1E1E1E" /> },
-    2: { vb: "0 0 76.28 76.28", c: <><path d={mouthSvg.p1dc24e40} fill="#1E1E1E" /><path d={mouthSvg.p204b6880} fill="#1E1E1E" /><path d={mouthSvg.p1a122c00} fill="#1E1E1E" /></> },
-    3: { vb: "0 0 76.28 76.28", c: <path d={mouthSvg.p888ba80} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="8" /> },
-    4: { vb: "0 0 76.28 76.28", c: <path d={mouthSvg.p1fd5f00} fill="#1E1E1E" /> },
-    5: { vb: "0 0 76.28 76.28", c: <path d={mouthSvg.p2bdeb700} fill="#1E1E1E" /> },
-    6: { vb: "0 0 76.28 76.28", c: <><path d={mouthSvg.p186cdc00} fill="#1E1E1E" /><path d={mouthSvg.p2e520780} fill="#1E1E1E" /></> },
-    7: { vb: "0 0 53.13 16.44", c: <><path d={mouthSvg.p39e67a00} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="5" /><path d={mouthSvg.p3dffa900} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="5" /></> },
-    8: { vb: "0 0 17.25 19.66", c: <><ellipse cx="8.63" cy="7.72" rx="8.63" ry="7.72" fill="#1E1E1E" /><path d={mouthSvg.p8d926e0} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="3" /></> },
-    9: { vb: "0 0 47.09 27.6",  c: <><path d={mouthSvg.p2caf6480} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="5" /><path d={mouthSvg.p13245200} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="3" /></> },
+    0: { vb: "0 0 76.28 76.28", w: M24,  h: M24,  c: <path d={mouthSvg.pce9f4f0} fill="#1E1E1E" /> },
+    1: { vb: "0 0 76.28 76.28", w: M24,  h: M24,  c: <path d={mouthSvg.p2d742180} fill="#1E1E1E" /> },
+    2: { vb: "0 0 76.28 76.28", w: M24,  h: M24,  c: <><path d={mouthSvg.p1dc24e40} fill="#1E1E1E" /><path d={mouthSvg.p204b6880} fill="#1E1E1E" /><path d={mouthSvg.p1a122c00} fill="#1E1E1E" /></> },
+    3: { vb: "0 0 76.28 76.28", w: M24,  h: M24,  c: <path d={mouthSvg.p888ba80} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="8" /> },
+    4: { vb: "0 0 76.28 76.28", w: M24,  h: M24,  c: <path d={mouthSvg.p1fd5f00} fill="#1E1E1E" /> },
+    5: { vb: "0 0 76.28 76.28", w: M24,  h: M24,  c: <path d={mouthSvg.p2bdeb700} fill="#1E1E1E" /> },
+    6: { vb: "0 0 76.28 76.28", w: M24,  h: M24,  c: <><path d={mouthSvg.p186cdc00} fill="#1E1E1E" /><path d={mouthSvg.p2e520780} fill="#1E1E1E" /></> },
+    7: { vb: "0 0 53.13 16.44", w: M12,  h: Mh37, c: <><path d={mouthSvg.p39e67a00} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="5" /><path d={mouthSvg.p3dffa900} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="5" /></> },
+    8: { vb: "0 0 17.25 19.66", w: M8,   h: Mh91, c: <><ellipse cx="8.63" cy="7.72" rx="8.63" ry="7.72" fill="#1E1E1E" /><path d={mouthSvg.p8d926e0} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="3" /></> },
+    9: { vb: "0 0 47.09 27.6",  w: M12,  h: Mh7,  c: <><path d={mouthSvg.p2caf6480} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="5" /><path d={mouthSvg.p13245200} stroke="#1E1E1E" strokeLinecap="round" strokeWidth="3" /></> },
   } as Record<number, IconSpec>)[cust.mouth]) ?? {
-    vb: "0 0 76.28 76.28",
+    vb: "0 0 76.28 76.28", w: M24, h: M24,
     c:  <path d={mouthSvg.pce9f4f0} fill="#1E1E1E" />,
   };
 
-  // ── Eyebrow variants — rendered directly in StandbyFace coords ──────────
-  // Proportions derived from MeepiAvatar at 256×241 px:
-  //   eye pixel size ≈ 20 px  →  StandbyFace EYE_SIZE=30 px  (scale ×1.507)
-  //   eyebrow rendered ≈ 37 px wide  →  StandbyFace ≈ 56 px  (use 55)
-  //   vertical gap eye–eyebrow ≈ 15 px  →  StandbyFace ≈ 22 px
-  //   ∴ EBROW_Y = EYE_Y − 22 = 78.5 − 22 = 56.5 → 57
-  const EBROW_SIZE = 55;
-  const EBROW_Y    = 57;
+  // ── Eyebrow variants — per-variant w/h = 24 × S_EBROW ──────────────────
+  // EBROW_Y: avatar eyebrow at y=100, eye at cy=109 → gap=9 units
+  // face-plate vertical scale ≈ 148/38 = 3.895 → gap = 9×3.895 = 35 px
+  // ∴ EBROW_Y = EYE_Y − 35 = 78.5 − 35 = 43
+  const EB_SIZE = Math.round(24 * S_EBROW); // 120
+  const EBROW_Y = 43;
 
   const ebp: IconSpec | null = (({
-    1: { vb: "0 0 76 76",       c: <rect x="24.85" y="30.75" width="26.3" height="14.5" rx="7.25" fill="#1E1E1E" transform="rotate(12.28 38 38)" /> },
-    2: { vb: "0 0 76.28 76.28", c: <path d={eyebrowSvg.p25856680} fill="#1E1E1E" /> },
-    3: { vb: "0 0 76.28 76.28", c: <path d={eyebrowSvg.pc212a00}  fill="#1E1E1E" /> },
+    1: { vb: "0 0 76 76",       w: EB_SIZE, h: EB_SIZE, c: <rect x="24.85" y="30.75" width="26.3" height="14.5" rx="7.25" fill="#1E1E1E" transform="rotate(12.28 38 38)" /> },
+    2: { vb: "0 0 76.28 76.28", w: EB_SIZE, h: EB_SIZE, c: <path d={eyebrowSvg.p25856680} fill="#1E1E1E" /> },
+    3: { vb: "0 0 76.28 76.28", w: EB_SIZE, h: EB_SIZE, c: <path d={eyebrowSvg.pc212a00}  fill="#1E1E1E" /> },
   } as Record<number, IconSpec>)[cust.eyebrow]) ?? null;
 
   // ── Decoration scale constants ────────────────────────────────────────
@@ -138,6 +168,7 @@ function StandbyFace({ cust }: { cust: CustState }) {
   // using ry = rx*(SX/SY)  so that  rx*SX = ry*SY  (equal standby radii).
   const SX = 5.479, SY = 3.162, TX = -222.3, TY = -266.7;
   const RY_RATIO = SX / SY; // ≈1.733
+  const DECOR_K = 1.5;
 
   return (
     // 471×148 face panel
@@ -153,10 +184,10 @@ function StandbyFace({ cust }: { cust: CustState }) {
 
       {/* Left eye — centered at (164.5, 78.5) */}
       <svg
-        x={L_EYE_X - EYE_SIZE / 2}
-        y={EYE_Y   - EYE_SIZE / 2}
-        width={EYE_SIZE}
-        height={EYE_SIZE}
+        x={L_EYE_X - ep.w / 2}
+        y={EYE_Y   - ep.h / 2}
+        width={ep.w}
+        height={ep.h}
         viewBox={ep.vb}
         overflow="visible"
       >
@@ -165,10 +196,10 @@ function StandbyFace({ cust }: { cust: CustState }) {
 
       {/* Right eye — mirrored */}
       <svg
-        x={R_EYE_X - EYE_SIZE / 2}
-        y={EYE_Y   - EYE_SIZE / 2}
-        width={EYE_SIZE}
-        height={EYE_SIZE}
+        x={R_EYE_X - ep.w / 2}
+        y={EYE_Y   - ep.h / 2}
+        width={ep.w}
+        height={ep.h}
         viewBox={ep.vb}
         overflow="visible"
       >
@@ -179,38 +210,34 @@ function StandbyFace({ cust }: { cust: CustState }) {
 
       {/* Mouth */}
       <svg
-        x={MOUTH_X - MOUTH_W / 2}
-        y={MOUTH_Y - MOUTH_H / 2}
-        width={MOUTH_W}
-        height={MOUTH_H}
+        x={MOUTH_X - mp.w / 2}
+        y={MOUTH_Y - mp.h / 2}
+        width={mp.w}
+        height={mp.h}
         viewBox={mp.vb}
         overflow="visible"
       >
         {mp.c}
       </svg>
 
-      {/*
-        Eyebrows — placed directly in StandbyFace coordinate space
-        (same x as the eye they're above, EBROW_Y above the eye centre).
-        Using a square viewBox renders the crescent shape without distortion.
-      */}
+      {/* Eyebrows — positioned above each eye */}
       {ebp && (
         <>
           <svg
-            x={L_EYE_X - EBROW_SIZE / 2}
-            y={EBROW_Y - EBROW_SIZE / 2}
-            width={EBROW_SIZE}
-            height={EBROW_SIZE}
+            x={L_EYE_X - ebp.w / 2}
+            y={EBROW_Y - ebp.h / 2}
+            width={ebp.w}
+            height={ebp.h}
             viewBox={ebp.vb}
             overflow="visible"
           >
             {ebp.c}
           </svg>
           <svg
-            x={R_EYE_X - EBROW_SIZE / 2}
-            y={EBROW_Y - EBROW_SIZE / 2}
-            width={EBROW_SIZE}
-            height={EBROW_SIZE}
+            x={R_EYE_X - ebp.w / 2}
+            y={EBROW_Y - ebp.h / 2}
+            width={ebp.w}
+            height={ebp.h}
             viewBox={ebp.vb}
             overflow="visible"
           >
@@ -225,23 +252,29 @@ function StandbyFace({ cust }: { cust: CustState }) {
         compensated ellipse (ry = rx × RY_RATIO) so they appear round despite
         the non-uniform scale.
       */}
-      {cust.decoration > 0 && (
+      {/* Case 2 — round glasses drawn directly in face-plate coords.
+           Radius = 10.5 avatar units × S_EYE = 57.6 px ≈ 58 px, which
+           mirrors the popup ratio where the lens surrounds the eye circle. */}
+      {cust.decoration === 2 && (() => {
+        const GR  = Math.round(10.5 * S_EYE); // 58
+        const GSW = 4;
+        return (
+          <>
+            <circle cx={L_EYE_X} cy={EYE_Y} r={GR} fill="none" stroke="#1E1E1E" strokeWidth={GSW} />
+            <circle cx={R_EYE_X} cy={EYE_Y} r={GR} fill="none" stroke="#1E1E1E" strokeWidth={GSW} />
+            <line x1={L_EYE_X + GR} y1={EYE_Y} x2={R_EYE_X - GR} y2={EYE_Y} stroke="#1E1E1E" strokeWidth={GSW} />
+          </>
+        );
+      })()}
+
+      {cust.decoration > 0 && cust.decoration !== 2 && (
         <g transform={`matrix(${SX},0,0,${SY},${TX},${TY})`}>
 
           {/* Case 1 — pink blush circles on both cheeks */}
           {cust.decoration === 1 && (
             <>
-              <ellipse cx="61.5"  cy="112.5" rx="1.8" ry={1.8 * RY_RATIO} fill="#FF8CA3" opacity="0.8" />
-              <ellipse cx="107.5" cy="112.5" rx="1.8" ry={1.8 * RY_RATIO} fill="#FF8CA3" opacity="0.8" />
-            </>
-          )}
-
-          {/* Case 2 — round glasses + bridge */}
-          {cust.decoration === 2 && (
-            <>
-              <ellipse cx="68.5"  cy="105.5" rx="2.74" ry={2.74 * RY_RATIO} fill="none" stroke="#1E1E1E" strokeWidth="0.5" />
-              <ellipse cx="100.5" cy="105.5" rx="2.74" ry={2.74 * RY_RATIO} fill="none" stroke="#1E1E1E" strokeWidth="0.5" />
-              <line x1="79" y1="105.5" x2="90" y2="105.5" stroke="#1E1E1E" strokeWidth="0.5" />
+              <ellipse cx="61.5"  cy="112.5" rx={1.8 * DECOR_K} ry={1.8 * DECOR_K * RY_RATIO} fill="#FF8CA3" opacity="0.8" />
+              <ellipse cx="107.5" cy="112.5" rx={1.8 * DECOR_K} ry={1.8 * DECOR_K * RY_RATIO} fill="#FF8CA3" opacity="0.8" />
             </>
           )}
 
@@ -262,7 +295,7 @@ function StandbyFace({ cust }: { cust: CustState }) {
           {/* Case 5 — plaster / band-aid */}
           {cust.decoration === 5 && (
             <>
-              <path d="M115.291 99.3556L107.327 101.489C106.594 101.686 106.159 102.439 106.356 103.172L107.067 105.827C107.263 106.56 108.017 106.995 108.75 106.798L116.713 104.665C117.446 104.468 117.881 103.715 117.685 102.982L116.974 100.327C116.777 99.5942 116.024 99.1592 115.291 99.3556Z" fill="#FFE2C2" stroke="#DCA26E" strokeWidth="0.5" />
+              <path d="M115.291 99.3556L107.327 101.489C106.594 101.686 106.159 102.439 106.356 103.172L107.067 105.827C107.263 106.56 108.017 106.995 108.75 106.798L116.713 104.665C117.446 104.468 117.881 103.715 117.685 102.982L116.974 100.327C116.777 99.5942 116.024 99.1592 115.291 99.3556Z" fill="#FFE2C2" stroke="#DCA26E" strokeWidth={0.5 * DECOR_K} />
               <path d="M113.235 100.973L109.917 101.862C109.367 102.01 109.041 102.575 109.188 103.125L109.544 104.452C109.691 105.002 110.256 105.328 110.806 105.181L114.124 104.292C114.674 104.144 115 103.579 114.853 103.029L114.497 101.702C114.35 101.152 113.785 100.826 113.235 100.973Z" fill="#FFCF9E" />
             </>
           )}
@@ -403,8 +436,10 @@ const CANVAS_H  = 402;
 // Figma 560:1314: face left ≈ (874−471)/2 = 201.5
 const MARGIN_X  = Math.round((CANVAS_W - FACE_W) / 2); // 202
 
-// Vertical: leave button bottom ≈ 43, bottom info height ≈ 20, gap ≈ 20
+// Vertical: keep a fixed gap between face and real-time info row
 const CONTENT_TOP = Math.round((CANVAS_H - FACE_H) / 2) - 10; // ≈ 117
+const INFO_GAP_PX = 77;
+const INFO_TOP = CONTENT_TOP + FACE_H + INFO_GAP_PX;
 
 type Props = { onLeave: () => void };
 
@@ -470,14 +505,23 @@ export function StandbyActiveScreen({ onLeave }: Props) {
   const elapsedDeg = (1 - secondsLeft / INITIAL_SEC) * 360;
 
   return (
-    <div className="fixed inset-0 z-[101] flex items-center justify-center bg-app-bg">
+    <div
+      className="fixed inset-0 z-[101] flex items-center justify-center"
+      style={{
+        boxSizing: "border-box",
+        paddingTop: "calc(44px + env(safe-area-inset-top, 0px))",
+        paddingBottom: "calc(34px + env(safe-area-inset-bottom, 0px))",
+        backgroundColor: screenBg,
+      }}
+    >
       <div
         className="relative text-[#1a1a1a]"
         style={{
           width: CANVAS_W,
           height: CANVAS_H,
           maxWidth: "100vw",
-          maxHeight: "100vh",
+          maxHeight:
+            "calc(100dvh - 44px - 34px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))",
           backgroundColor: screenBg,
         }}
       >
@@ -579,7 +623,7 @@ export function StandbyActiveScreen({ onLeave }: Props) {
              Face is centred at x=437; this row is also centred at x=437.   */}
         <div
           className="absolute flex items-center justify-center gap-[60px] font-extrabold text-[#1a1a1a]"
-          style={{ left: 0, right: 0, bottom: 28 }}
+          style={{ left: 0, right: 0, top: INFO_TOP }}
         >
           <span className="text-[17px] tabular-nums">{time}</span>
           <span className="text-[17px] tabular-nums">{date}</span>
