@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  /* Figma HomePage + shared */
+  --color-app-bg: #fff8e1;
+  --color-card-yellow: #ffe082;
+  --color-companion-panel: #fde8b3;
+  --color-stat-tile: #ffc341;
+  --color-orange-primary: #ffb300;
+  --color-orange-deep: #f59e0b;
+  --color-text: #212121;
+  --color-text-muted: #757575;
+  --color-track-blue: #90caf9;
+  --color-milestone-future: #bbdefb;
+  /* Companion Page 560:1261 */
+  --color-pal-screen: #fce491;
+  --color-pal-card: #ffc542;
+  --color-pal-platform-deep: #b9daf2;
+  --color-pal-platform-top: #d6eaf8;
+  /* Standby 560:1314 / animation */
+  --color-standby-bg: #89c2e9;
+  --color-standby-face: #a8d5f2;
+  --color-standby-leave: #ffd56b;
+  --color-standby-timer: #ffb319;
+  --color-standby-ring: #fef3d1;
+  --color-standby-progress: #2c5282;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+  background: var(--color-app-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
