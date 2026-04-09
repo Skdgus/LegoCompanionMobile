@@ -437,8 +437,10 @@ const CANVAS_H  = 402;
 const MARGIN_X  = Math.round((CANVAS_W - FACE_W) / 2); // 202
 
 // Vertical: keep a fixed gap between face and real-time info row
-const CONTENT_TOP = Math.round((CANVAS_H - FACE_H) / 2) - 10; // ≈ 117
-const INFO_GAP_PX = 77;
+// Figma 982:415: face/timer row sits slightly above vertical center, and the
+// bottom info row has a tighter gap than earlier iterations.
+const CONTENT_TOP = Math.round((CANVAS_H - FACE_H) / 2) - 15; // ≈ 112
+const INFO_GAP_PX = 60;
 const INFO_TOP = CONTENT_TOP + FACE_H + INFO_GAP_PX;
 
 // Portrait-only safe-area reserves: only applied when the device is taller
